@@ -15,8 +15,9 @@
         :drop-placeholder="cDropPlaceHolder"
     ></b-form-file>
     <div class="mt-3">Selected file: {{ file1 ? file1.name : '' }}
-      <b-badge class="file-badge" :key="item.name" variant="info" v-for="(item) in dataFileList">
-        {{ item.name }}
+      <b-badge class="file-badge" :key="item.name"
+               variant="info" v-for="(item) in dataFileList">
+        <img class="icon" src="../assets/imgicon.png" alt=""/>{{ item.name }}
       </b-badge>
     </div>
     <b-button variant="primary">{{ cUploadTitle }}</b-button>
@@ -85,6 +86,14 @@ export default class ImageSelector extends ImageSelectorProps {
 
 .file-badge {
   font-size: 14px;
+  margin-bottom: 4px;
   margin-right: 4px;
+  cursor: default;
 }
+
+.icon {
+  width: 14px;
+  margin: 2px;
+}
+
 </style>
