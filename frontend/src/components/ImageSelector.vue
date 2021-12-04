@@ -20,7 +20,8 @@
         <img class="icon" src="../assets/imgicon.png" alt=""/>{{ item.name }}
       </b-badge>
     </div>
-    <b-button variant="primary">{{ cUploadTitle }}</b-button>
+    <b-button :variant="cUploadBtnVariant" :disabled="!cIsFileSelected"
+      @click="handleBtnUpload">{{ cUploadTitle }}</b-button>
     <b-button variant="outline-primary">{{ cAboutTitle }}</b-button>
   </b-jumbotron>
 </template>
@@ -69,6 +70,15 @@ export default class ImageSelector extends ImageSelectorProps {
 
   get cIsFileSelected(): boolean {
     return this.dataFileList.length > 0;
+  }
+
+  get cUploadBtnVariant(): string {
+    return this.cIsFileSelected ? "primary" : "secondary";
+  }
+
+  handleBtnUpload(): void {
+    this.$emit("click-upload", this.dataFileList);
+    this.dataFileList = [];
   }
 }
 

@@ -4,6 +4,7 @@
       <ImageSelector
           caption="CS655: Image Recognition Network Simulator"
           subTitle="Select image files, then click Upload to start running the simulation."
+          @click-upload="uploadFiles"
       />
     </b-container>
     <b-container class="displayField" fluid="sm">
@@ -19,6 +20,7 @@
 import {Component, Vue} from 'vue-property-decorator';
 import ImageSelector from './components/ImageSelector.vue';
 import ImageResult from './components/ImageResult.vue';
+import axios from 'axios';
 
 // 存放自定义的结果的类型
 interface RecognitionDataType {
@@ -36,6 +38,14 @@ interface MainPageElementIndex {
   [requestId: string]: MainPageElement
 }
 
+interface ApiTaskCallReturn {
+  code: number,
+  result: string,
+  data: {
+    task_id: string,
+  }
+}
+
 @Component({
   components: {
     ImageSelector,
@@ -48,42 +58,53 @@ export default class App extends Vue {
 
   constructor() {
     super();
-    this.mainDataList.push({
-      imageUrl: "https://picsum.photos/600/300/?image=25",
-      requestId: "1231212123",
-      displayName: "test1.png",
-      result: undefined,
-    });
-    this.mainDataList.push({
-      imageUrl: "https://placekitten.com/300/300",
-      requestId: "456456456",
-      displayName: "test2.png",
-      result: { value: "123"},
-    });
-    this.mainDataList.push({
-      imageUrl: "https://picsum.photos/400/400/?image=20",
-      requestId: "789789789",
-      displayName: "test3.png",
-      result: { value: "456"},
-    });
-    this.mainDataList.push({
-      imageUrl: "https://picsum.photos/400/400/?image=20",
-      requestId: "78978978119",
-      displayName: "test3.png",
-      result: { value: "456"},
-    });
-    this.mainDataList.push({
-      imageUrl: "https://picsum.photos/400/400/?image=20",
-      requestId: "78978978111119",
-      displayName: "test3.png",
-      result: { value: "456"},
-    });
-    this.mainDataList.push({
-      imageUrl: "https://picsum.photos/400/400/?image=20",
-      requestId: "789789781111111119",
-      displayName: "test3.png",
-      result: { value: "456"},
-    });
+  }
+
+  generalError(level: number, message: string): void {
+    alert(level + ", " + message);
+  }
+
+  uploadFiles(fileList: File[]): void {
+    for (const file of fileList) {
+      this.uploadSingleFile(file);
+    }
+  }
+
+  async uploadSingleFile(file: File): Promise<void> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const result = await this.$axios.post('api/task', formData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          })
+      const data = result.data;
+      if (!data['code'] || !data['result']) {
+        this.generalError(2, "Unexpected error when calling the manager API.");
+        return;
+      }
+      const callData = data as ApiTaskCallReturn;
+
+      if (callData.code != 100) {
+        this.generalError(1, callData.result);
+      } else {
+        const requestId = callData.data.task_id;
+
+        const element: MainPageElement = {
+          imageUrl: `img/${requestId}`,
+          requestId: requestId,
+          displayName: file.name,
+          result: undefined,
+        };
+        this.mainDataList.push(element);
+        this.mainDataIndex[requestId] = element;
+      }
+    } catch (e) {
+      this.generalError(1, e.message);
+    }
   }
 }
 </script>
