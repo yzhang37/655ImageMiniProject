@@ -1,2 +1,13 @@
+node_modules/
+dist
+dist-ssr
+*.local
 yarn.lock
 
+# IDE files
+.idea
+.vscode
+
+# os file to be ignored
+.DS_Store
+Desktop.ini
