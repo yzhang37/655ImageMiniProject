@@ -1,10 +1,10 @@
 import uuid
 import os
-from flask import Flask, request
+from flask import Flask, request, abort, send_file
 from base58 import b58encode
 from errors import ApiTaskFailNoFileField, ApiTaskFailFileIsEmpty
 
-from util import fail_result, success_result
+from util import fail_result, success_result, ensure_path
 
 FLICKR_ALPHABET = b'123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ'
 
@@ -28,9 +28,13 @@ def handle_picture():
         # 生成一个任务 id，供前端使用
         uuid_byte = uuid.uuid4().bytes
         short_uuid = b58encode(uuid_byte, FLICKR_ALPHABET)
+        str_uuid = short_uuid.decode()
+
+        # 这一步要保存文件
+        file.save(get_temp_name(str_uuid))
 
         # 最后，返回任务 id 给前端
-        return success_result(task_id=short_uuid.decode())
+        return success_result(task_id=str_uuid)
 
     elif request.method == 'OPTIONS':
         return """Usage:
@@ -40,6 +44,21 @@ def handle_picture():
 - Return Format: JSON
 - Return Data: { "task_id": <task_id, type: string, format: base58 of an random generated uuid> }
 """
+
+
+def get_temp_name(filename: str):
+    temp_dir = ensure_path('temp')
+    return os.path.join(temp_dir, filename)
+
+
+@app.route('/img/<task_id>', methods=["GET"])
+def access_temp_img(task_id: str):
+    temp_dir = ensure_path('temp')
+    file_path = os.path.join(temp_dir, task_id)
+    if os.path.exists(file_path) and os.path.isfile(file_path):
+        return send_file(file_path, task_id)
+    else:
+        abort(404)
 
 
 if __name__ == '__main__':
