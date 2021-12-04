@@ -14,7 +14,7 @@
         :placeholder="cPlaceHolder"
         :drop-placeholder="cDropPlaceHolder"
     ></b-form-file>
-    <div class="mt-3">Selected file: {{ file1 ? file1.name : '' }}
+    <div class="mt-3">Selected file:
       <b-badge class="file-badge" :key="item.name"
                variant="info" v-for="(item) in dataFileList">
         <img class="icon" src="../assets/imgicon.png" alt=""/>{{ item.name }}
