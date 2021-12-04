@@ -13,7 +13,7 @@ app = Flask(__name__)
 app.secret_key = os.urandom(16)
 
 
-@app.route('/task', methods=["POST", "OPTIONS"])
+@app.route('/api/task', methods=["POST", "OPTIONS"])
 def handle_picture():
     if request.method == 'POST':
         # 读取 forms 中的 file 数据，并进行存储
@@ -24,8 +24,6 @@ def handle_picture():
         # 如果用户没有选择文件，浏览器将提交一个没有文件名的空 file。
         if file.filename == "":
             return fail_result(ApiTaskFailFileIsEmpty)
-
-
 
         # 生成一个任务 id，供前端使用
         uuid_byte = uuid.uuid4().bytes
