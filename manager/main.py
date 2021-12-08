@@ -17,9 +17,10 @@ parser.add_argument("--hostname", "-i", type=str, default="0.0.0.0",
 parser.add_argument("--port", "-p", type=int, default=80, help="Setting the server port")
 parser.add_argument("--debug", "-g", action="store_true", default=False,
                     help="Whether to use debug mode.")
+parser.add_argument("--dir-temp", dest="temp", type=str, default="temp", help="Store temporary files in a directory")
 
 
-def main(hostname: str, port: int, use_debug: bool = False):
+def main(hostname: str, port: int, temp_dir: str, use_debug: bool = False):
     app = Flask(__name__)
     # random choose a system generated number as secret key.
     app.secret_key = os.urandom(16)
@@ -57,26 +58,30 @@ def main(hostname: str, port: int, use_debug: bool = False):
     """
 
     def get_temp_name(filename: str):
-        temp_dir = ensure_path('temp')
-        return os.path.join(temp_dir, filename)
+        ok_temp_dir = ensure_path(temp_dir)
+        return os.path.join(ok_temp_dir, filename)
 
     @app.route('/img/<task_id>', methods=["GET"])
     def access_temp_img(task_id: str):
-        temp_dir = ensure_path('temp')
-        file_path = os.path.join(temp_dir, task_id)
+        file_path = get_temp_name(task_id)
         if os.path.exists(file_path) and os.path.isfile(file_path):
             return send_file(file_path, task_id)
         else:
             abort(404)
 
-    @app.route('/', methods=["GET"])
-    def frontend():
-        pass
+    @app.route('/', defaults={'path': 'index.html'})
+    @app.route('/<path:path>', methods=["GET"])
+    def frontend(path: str):
+        return app.send_static_file(path)
 
+    print(f"!!! Server run on {hostname}:{port}{ ', as debug mode' if use_debug else ''}")
+    print(f"!!! Directory used to store files is '{temp_dir}'")
     app.run(host=hostname, port=port, debug=use_debug)
 
 
 if __name__ == '__main__':
     args = parser.parse_args()
-    main(args.hostname, args.port, args.debug)
-
+    main(hostname=args.hostname,
+         port=args.port,
+         temp_dir=args.temp,
+         use_debug=args.debug)
