@@ -61,7 +61,7 @@ def main(hostname: str, port: int, temp_dir: str, use_debug: bool = False):
         ok_temp_dir = ensure_path(temp_dir)
         return os.path.join(ok_temp_dir, filename)
 
-    @app.route('/img/<task_id>', methods=["GET"])
+    @app.route('/upload/<task_id>', methods=["GET"])
     def access_temp_img(task_id: str):
         file_path = get_temp_name(task_id)
         if os.path.exists(file_path) and os.path.isfile(file_path):
