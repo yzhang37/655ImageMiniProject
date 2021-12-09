@@ -302,12 +302,18 @@ def on_ws_connection():
 def test_disconnect():
     print('Client disconnected')
 
+
 def run_backend_server():
     main()
 
-    print(f"""!!! Server run on {backend_server_hostname}:{
+    print(f"""Manager details:
+total_img_num: {total_img_num}
+required_workers_num: {required_workers_num}
+workers_limit: {workers_limit}
+""")
+    print(f"""Server run on {backend_server_hostname}:{
         backend_server_port}{', as debug mode' if backend_server_use_debug else ''}""")
-    print(f"!!! Directory used to store files is '{temp_image_dir}'")
+    print(f"Directory used to store files is '{temp_image_dir}'")
 
     socketio.run(app, host=backend_server_hostname,
                  port=backend_server_port,
