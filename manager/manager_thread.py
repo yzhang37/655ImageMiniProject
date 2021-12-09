@@ -19,7 +19,7 @@ def check_if_work():
 
 
 def get_image(image_id):
-    img = Image.open('temp/' + image_id).convert('RGB')
+    img = Image.open("temp/" + image_id).convert('RGB')
     img = transforms.ToTensor()(img)
     row = img.shape[1]
     column = img.shape[2]
@@ -170,17 +170,41 @@ def main():
 
     # Build connection with workers
     manager_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    host = socket.gethostname()
-    manager_socket.bind((host, 2888))
-    print(host)
+    manager_socket2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    manager_socket3 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    manager_socket.bind(("10.10.1.1", 2888))
+    manager_socket2.bind(("10.10.2.1", 2889))
+    manager_socket3.bind(("10.10.3.1", 2890))
+
     manager_socket.listen(5)
+    manager_socket2.listen(5)
+    manager_socket3.listen(5)
     print(">>> Manager starts. Connecting to workers...")
-    for i in range(3):  # set range(4)
-        worker, addr = manager_socket.accept()
-        conn_pool.append(worker)
-        if i < required_workers_num:
-            idle_workers.put(i)
-    print(">>> Connected with all 4 nodes")
+
+    i = 0
+    worker, addr = manager_socket.accept()
+    conn_pool.append(worker)
+    if i < required_workers_num:
+        idle_workers.put(i)
+    i += 1
+    print(">>> Connected to worker1")
+
+    worker2, addr2 = manager_socket2.accept()
+    conn_pool.append(worker2)
+    if i < required_workers_num:
+        idle_workers.put(i)
+    i += 1
+    print(">>> Connected to worker2")
+
+    worker3, addr3 = manager_socket3.accept()
+    conn_pool.append(worker3)
+    if i < required_workers_num:
+        idle_workers.put(i)
+    i += 1
+    print(">>> Connected to worker3")
+
+    print(">>> Connected with all 3 nodes")
 
     try:
         while True:
@@ -197,7 +221,8 @@ def main():
     except Exception as e:
         print(e)
         manager_socket.close()
-
+        manager_socket2.close()
+        manager_socket3.close()
 
 if __name__ == '__main__':
     main()

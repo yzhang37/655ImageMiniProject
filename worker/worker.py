@@ -103,9 +103,9 @@ model, imagenet_label = initialize_model()
 host = argv[1]
 port = int(argv[2])
 
+manager_socket = socket.create_connection((host, port))
 
 try:
-    manager_socket = socket.create_connection((host, port))
     print(">>> Connected with manager: " + host + ":" + str(port))
     image_msg = ""
     while True:
