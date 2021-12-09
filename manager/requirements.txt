@@ -1,3 +1,6 @@
 Flask
 base58
-
+torch
+torchvision
+pillow
+numpy

@@ -94,7 +94,7 @@ export default class App extends Vue {
         const requestId = callData.data.task_id;
 
         const element: MainPageElement = {
-          imageUrl: `img/${requestId}`,
+          imageUrl: `upload/${requestId}`,
           requestId: requestId,
           displayName: file.name,
           result: undefined,
