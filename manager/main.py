@@ -2,9 +2,9 @@ import uuid
 import os
 import argparse
 import socket
-import sys
 import time
 from flask import Flask, request, abort, send_file
+from flask_socketio import SocketIO
 from base58 import b58encode
 from threading import Thread, Semaphore
 from multiprocessing import Queue, Process, Event
@@ -37,6 +37,8 @@ temp_image_dir = command_line_args.temp
 app = Flask(__name__)
 # random choose a system generated number as secret key.
 app.secret_key = os.urandom(16)
+# update HTTP server to WebSocket server.
+socketio = SocketIO(app, cors_allowed_origins='*')
 
 semaphore = Semaphore(3)
 total_img_num = command_line_args.total_img_num
@@ -138,6 +140,10 @@ def snd_rcv_img(img_id):
             else:
                 last_img_id[_id] = this_img_id
                 results[this_img_id] = this_result
+                socketio.emit("result", {
+                    "task_id": this_img_id,
+                    "result": this_result,
+                })
                 total_img_size += len(img_msg.encode("utf-8")) * 8
                 img_num_count += 1
 
@@ -224,20 +230,6 @@ def main():
 
     print(">>> Connected with all 3 nodes")
 
-    # try:
-    #     while True:
-    #         # TODO
-    #         while check_if_work():
-    #             worker_id = idle_workers.get()
-    #             print(worker_id)
-    #             print(time.time())
-    #
-    # except Exception as e:
-    #     print(e)
-    #     manager_socket.close()
-    #     manager_socket2.close()
-    #     manager_socket3.close()
-
 
 @app.route('/api/task', methods=["POST", "OPTIONS"])
 def handle_picture():
@@ -260,6 +252,7 @@ def handle_picture():
 
         # 这一步要保存文件
         file.save(get_temp_name(str_uuid))
+
         # create new thread for the image
         print(">>> Get one image: " + str_uuid)
         if img_num_count == 0:
@@ -301,12 +294,24 @@ def frontend(path: str):
     return app.send_static_file(path)
 
 
+@socketio.on('connect')
+def on_ws_connection():
+    print("A client connected to ws.")
+
+@socketio.on('disconnect')
+def test_disconnect():
+    print('Client disconnected')
+
 def run_backend_server():
     main()
-    print(
-        f"!!! Server run on {backend_server_hostname}:{backend_server_port}{', as debug mode' if backend_server_use_debug else ''}")
+
+    print(f"""!!! Server run on {backend_server_hostname}:{
+        backend_server_port}{', as debug mode' if backend_server_use_debug else ''}""")
     print(f"!!! Directory used to store files is '{temp_image_dir}'")
-    app.run(host=backend_server_hostname, port=backend_server_port, debug=backend_server_use_debug)
+
+    socketio.run(app, host=backend_server_hostname,
+                 port=backend_server_port,
+                 debug=backend_server_use_debug, use_reloader=False)
 
 
 if __name__ == '__main__':
