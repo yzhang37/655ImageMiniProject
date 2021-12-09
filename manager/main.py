@@ -6,7 +6,7 @@ import sys
 import time
 from flask import Flask, request, abort, send_file
 from base58 import b58encode
-from threading import Thread
+from threading import Thread, Semaphore
 from multiprocessing import Queue, Process, Event
 from PIL import Image
 import torchvision.transforms as transforms
@@ -38,6 +38,7 @@ app = Flask(__name__)
 # random choose a system generated number as secret key.
 app.secret_key = os.urandom(16)
 
+semaphore = Semaphore(3)
 total_img_num = command_line_args.total_img_num
 required_workers_num = command_line_args.required_workers_num  # set 1-5
 workers_limit = required_workers_num + 1
@@ -64,6 +65,7 @@ def check_if_work():
     else:
         return False
 
+
 def get_image(image_id):
     img = Image.open(temp_image_dir + image_id).convert('RGB')
     img = transforms.ToTensor()(img)
@@ -75,11 +77,13 @@ def get_image(image_id):
         ss += str(num) + ' '
     return ss
 
+
 def collect_image_result(msg):
     decoded_result = msg.split(" ", 1)
     msg_id = decoded_result[0]
     result = decoded_result[1].split("\n")[0]
     return msg_id, result
+
 
 def output_statistics():
     global total_img_size, total_time
@@ -90,13 +94,18 @@ def output_statistics():
     throughput = total_img_size / total_time
     print("Throughput: " + str(throughput) + "bps")
 
-def snd_rcv_img(worker, _id, img_id):
+
+def snd_rcv_img(img_id):
     global start_time, img_num_count, images, conn_pool, \
         workers_limit, idle_workers, last_img_id, results, \
         total_img_size, total_img_num, total_time
 
     try:
+        semaphore.acquire()
         img_msg = get_image(img_id) + "\n"
+        _id = idle_workers.get()
+        worker = conn_pool[_id]
+
         while True:
             # if random.uniform(0, 1) < 0.5:
             #     worker.send(img_msg.encode("utf-8"))
@@ -106,12 +115,14 @@ def snd_rcv_img(worker, _id, img_id):
             timer = Timer(20, worker, _id, img_msg)
             timer.start()
             msg = ""
+
             while True:
                 feedback = worker.recv(buffer_size)
                 msg += feedback.decode("utf-8")
                 if msg[-1] == '\n':
                     timer.cancel()
                     break
+
             if msg == "404\n":
                 print(">>> Detected disconnection with Worker" + str(_id + 1))
                 timer.cancel()
@@ -120,20 +131,24 @@ def snd_rcv_img(worker, _id, img_id):
             print(">>> Receive from the server: " + msg)
             print(time.time())
             this_img_id, this_result = collect_image_result(msg)
+
             if this_img_id == last_img_id[_id]:
-                worker.send(img_msg.encode("utf-8"))
                 continue
             else:
                 last_img_id[_id] = this_img_id
                 results[this_img_id] = this_result
                 total_img_size += len(img_msg.encode("utf-8")) * 8
                 img_num_count += 1
+
                 if img_num_count == total_img_num:
                     total_time = time.time() - start_time
                     output_statistics()
                     img_num_count = 0
                 break
+
         idle_workers.put(_id)
+        semaphore.release()
+
     except Exception as e:
         print(e)
         # Handle if one worker failed
@@ -163,6 +178,7 @@ class Timer(Process):
         while not self.finished.wait(self.interval):
             self.worker.send(self.img_msg.encode("utf-8"))
             print(">>> Timeout! Send the image again to worker" + str(self.id + 1))
+
 
 def main():
     global conn_pool, idle_workers, required_workers_num, images, start_time, img_num_count
@@ -205,23 +221,22 @@ def main():
 
     print(">>> Connected with all 3 nodes")
 
-    try:
-        while True:
-            while check_if_work():
-                worker_id = idle_workers.get()
-                print(worker_id)
-                print(time.time())
-                if img_num_count == 0:
-                    start_time = time.time()
-                img_id = images.get()
-                worker_thread = Thread(target=snd_rcv_img, args=(conn_pool[worker_id], worker_id, img_id))
-                worker_thread.setDaemon(True)
-                worker_thread.start()
-    except Exception as e:
-        print(e)
-        manager_socket.close()
-        manager_socket2.close()
-        manager_socket3.close()
+    # try:
+    #     while True:
+    #         # TODO
+    #         while check_if_work():
+    #             worker_id = idle_workers.get()
+    #             print(worker_id)
+    #             print(time.time())
+    #             if img_num_count == 0:
+    #                 start_time = time.time()
+    #
+    # except Exception as e:
+    #     print(e)
+    #     manager_socket.close()
+    #     manager_socket2.close()
+    #     manager_socket3.close()
+
 
 @app.route('/api/task', methods=["POST", "OPTIONS"])
 def handle_picture():
@@ -242,6 +257,10 @@ def handle_picture():
 
         # 这一步要保存文件
         file.save(get_temp_name(str_uuid))
+        # create new thread for the image
+        worker_thread = Thread(target=snd_rcv_img, args=(str_uuid,))
+        worker_thread.setDaemon(True)
+        worker_thread.start()
 
         # 最后，返回任务 id 给前端
         return success_result(task_id=str_uuid)
@@ -277,7 +296,8 @@ def frontend(path: str):
 
 
 def run_backend_server():
-    print(f"!!! Server run on {backend_server_hostname}:{backend_server_port}{', as debug mode' if backend_server_use_debug else ''}")
+    print(
+        f"!!! Server run on {backend_server_hostname}:{backend_server_port}{', as debug mode' if backend_server_use_debug else ''}")
     print(f"!!! Directory used to store files is '{temp_image_dir}'")
     app.run(host=backend_server_hostname, port=backend_server_port, debug=backend_server_use_debug)
 
