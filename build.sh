@@ -1,8 +1,8 @@
-#!/bin/bash
-# work_path=$(dirname $(readlink -f $0))
-# cd ${work_path}
+#!/bin/zsh
+work_path=$(dirname $(readlink -f $0))
+cd ${work_path}
 
-target_path="./manager/static"
+target_path="$work_path/manager/static"
 if [ -d "$target_path" ]; then
   echo -e "\e[33mClearing previous target directory $target_path...\e[0m"
   rm -r $target_path
