@@ -100,11 +100,12 @@ def snd_rcv_img(img_id):
         workers_limit, idle_workers, last_img_id, results, \
         total_img_size, total_img_num, total_time
 
+    semaphore.acquire()
+    _id = idle_workers.get()
+    worker = conn_pool[_id]
+    img_msg = get_image(img_id) + "\n"
+
     try:
-        semaphore.acquire()
-        img_msg = get_image(img_id) + "\n"
-        _id = idle_workers.get()
-        worker = conn_pool[_id]
 
         while True:
             # if random.uniform(0, 1) < 0.5:
@@ -147,7 +148,6 @@ def snd_rcv_img(img_id):
                 break
 
         idle_workers.put(_id)
-        semaphore.release()
 
     except Exception as e:
         print(e)
@@ -159,6 +159,9 @@ def snd_rcv_img(img_id):
             workers_limit += 1
         else:
             print(">>> There is no available worker anymore.")
+
+    finally:
+        semaphore.release()
 
 
 # Timer Class
@@ -228,8 +231,6 @@ def main():
     #             worker_id = idle_workers.get()
     #             print(worker_id)
     #             print(time.time())
-    #             if img_num_count == 0:
-    #                 start_time = time.time()
     #
     # except Exception as e:
     #     print(e)
@@ -240,6 +241,8 @@ def main():
 
 @app.route('/api/task', methods=["POST", "OPTIONS"])
 def handle_picture():
+    global start_time
+
     if request.method == 'POST':
         # 读取 forms 中的 file 数据，并进行存储
         if 'file' not in request.files:
@@ -258,6 +261,9 @@ def handle_picture():
         # 这一步要保存文件
         file.save(get_temp_name(str_uuid))
         # create new thread for the image
+        print(">>> Get one image: " + str_uuid)
+        if img_num_count == 0:
+            start_time = time.time()
         worker_thread = Thread(target=snd_rcv_img, args=(str_uuid,))
         worker_thread.setDaemon(True)
         worker_thread.start()
