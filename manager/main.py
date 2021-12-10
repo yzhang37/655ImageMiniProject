@@ -1,15 +1,16 @@
-import uuid
-import os
 import argparse
+import os
 import socket
 import time
+import uuid
+from multiprocessing import Queue, Process, Event
+from threading import Thread, Semaphore
+
+import torchvision.transforms as transforms
+from PIL import Image
+from base58 import b58encode
 from flask import Flask, request, abort, send_file
 from flask_socketio import SocketIO
-from base58 import b58encode
-from threading import Thread, Semaphore
-from multiprocessing import Queue, Process, Event
-from PIL import Image
-import torchvision.transforms as transforms
 
 from errors import ApiTaskFailNoFileField, ApiTaskFailFileIsEmpty
 from util import fail_result, success_result, ensure_path
@@ -295,6 +296,7 @@ def frontend(path: str):
 def on_ws_connection():
     print("A client connected to ws.")
 
+
 @socketio.on('disconnect')
 def test_disconnect():
     print('Client disconnected')
@@ -309,7 +311,7 @@ required_workers_num: {required_workers_num}
 workers_limit: {workers_limit}
 """)
     print(f"""Server run on {backend_server_hostname}:{
-        backend_server_port}{', as debug mode' if backend_server_use_debug else ''}""")
+    backend_server_port}{', as debug mode' if backend_server_use_debug else ''}""")
     print(f"Directory used to store files is '{temp_image_dir}'")
 
     socketio.run(app, host=backend_server_hostname,
