@@ -20,7 +20,7 @@
 import {Component, Vue} from 'vue-property-decorator';
 import ImageSelector from './components/ImageSelector.vue';
 import ImageResult from './components/ImageResult.vue';
-import axios from 'axios';
+import SocketioService from './services/socketio.service';
 
 // 存放自定义的结果的类型
 interface RecognitionDataType {
@@ -46,6 +46,11 @@ interface ApiTaskCallReturn {
   }
 }
 
+interface WsResultReturn {
+  task_id: string,
+  result: string,
+}
+
 @Component({
   components: {
     ImageSelector,
@@ -54,10 +59,28 @@ interface ApiTaskCallReturn {
 })
 export default class App extends Vue {
   mainDataList: MainPageElement[] = [];
-  mainDataIndex: MainPageElementIndex = {};
+  mainDataDictionary: MainPageElementIndex = {};
 
   constructor() {
     super();
+  }
+
+  created(): void {
+    SocketioService.setupSocketConnection();
+
+    SocketioService.Socket.on("result", (data: WsResultReturn): void => {
+      if (data.task_id in this.mainDataDictionary) {
+        const obj = this.mainDataDictionary[data.task_id];
+        Vue.set(obj, "result", {
+          value: data.result
+        })
+      }
+    })
+
+  }
+
+  beforeUnmount(): void {
+    SocketioService.disconnect();
   }
 
   generalError(level: number, message: string): void {
@@ -100,7 +123,7 @@ export default class App extends Vue {
           result: undefined,
         };
         this.mainDataList.push(element);
-        this.mainDataIndex[requestId] = element;
+        this.mainDataDictionary[requestId] = element;
       }
     } catch (e) {
       this.generalError(1, e.message);
