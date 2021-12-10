@@ -110,8 +110,6 @@ def snd_rcv_img(img_id):
     try:
 
         while True:
-            # if random.uniform(0, 1) < 0.5:
-            #     worker.send(img_msg.encode("utf-8"))
             worker.send(img_msg.encode("utf-8"))
             print(">>> Send one image to worker" + str(_id + 1))
             print(time.time())
@@ -167,8 +165,6 @@ def snd_rcv_img(img_id):
             semaphore.release()
         else:
             print(">>> There is no available worker anymore.")
-
-
 
 
 # Timer Class
