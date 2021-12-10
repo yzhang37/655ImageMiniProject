@@ -1,4 +1,3 @@
-
 class BaseErrorData:
     def __init__(self, code: int, reason: str):
         self._code = code
