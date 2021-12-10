@@ -40,9 +40,9 @@ app.secret_key = os.urandom(16)
 # update HTTP server to WebSocket server.
 socketio = SocketIO(app, cors_allowed_origins='*')
 
-semaphore = Semaphore(3)
 total_img_num = command_line_args.total_img_num
 required_workers_num = command_line_args.required_workers_num  # set 1-5
+semaphore = Semaphore(required_workers_num)
 workers_limit = required_workers_num + 1
 conn_pool = []
 images = Queue(maxsize=20)
@@ -154,6 +154,7 @@ def snd_rcv_img(img_id):
                 break
 
         idle_workers.put(_id)
+        semaphore.release()
 
     except Exception as e:
         print(e)
@@ -163,11 +164,11 @@ def snd_rcv_img(img_id):
             idle_workers.put(workers_limit - 1)
             print(">>> Start assigning works to Worker" + str(workers_limit))
             workers_limit += 1
+            semaphore.release()
         else:
             print(">>> There is no available worker anymore.")
 
-    finally:
-        semaphore.release()
+
 
 
 # Timer Class
