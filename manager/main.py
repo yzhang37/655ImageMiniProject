@@ -195,9 +195,9 @@ def main():
     manager_socket2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     manager_socket3 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    manager_socket.bind(("localhost", 2888))
-    manager_socket2.bind(("localhost", 2889))
-    manager_socket3.bind(("localhost", 2890))
+    manager_socket.bind(("10.10.1.1", 2888))
+    manager_socket2.bind(("10.10.2.1", 2889))
+    manager_socket3.bind(("10.10.3.1", 2890))
 
     manager_socket.listen(5)
     manager_socket2.listen(5)
