@@ -6,6 +6,7 @@
 	use these commands to **download everything** and **start server directly** by the automated script:    
 		`curl -o manager.zip https://codeload.github.com/yzhang37/655ImageMiniProject/legacy.zip/main`    
 		`unzip manager.zip`    
+		use `ls` to check the yzhang37-655ImageMiniProject folder name, and then    
 		`cd ./yzhang37-655ImageMiniProject-edb461f`    
 		`chmod +x ./oobe.sh`    
 		`./oobe.sh`    
@@ -29,3 +30,8 @@
 	`python3 -m worker.py 0 10.10.3.1 2890`	    
 
 6. After the manager and the workers are running, open a browser and use the url given in the manager to upload images.    
+
+## Note   
+1. Video url:    
+2. Recommand upload images of small size and don't upload too much images(e.g. no more than 3 images) because GENI nodes cannot handle too much work.    
+3. We provide a sample image(download.jpeg) for you to test.
