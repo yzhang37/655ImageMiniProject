@@ -1,7 +1,5 @@
 Flask
 base58
-torch
-torchvision
 pillow
 numpy
 flask_socketio
