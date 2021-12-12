@@ -6,6 +6,8 @@
 		use these commands to download code and install packages by the automated script:    
 		```
 		wget https://raw.githubusercontent.com/yzhang37/655ImageMiniProject/main/worker/worker_prerequisite.sh    
+		
 		chmod +x ./worker_prerequisite.sh    
+		
 		./worker_prerequisite.sh    
 		```
