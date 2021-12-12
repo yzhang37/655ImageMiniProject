@@ -1,5 +1,6 @@
 # 655 Simple Image Recognition Mini Project
 
+## Preparation
 1. Use **mini-project.xml** rspec file to create GENI nodes    
 	
 2. Log in nodes **worker-1**, **worker-2**, and **worker-3**:   
@@ -10,5 +11,6 @@
 3. Log in node **manager**:
 
 
+## Run the project
 4. In **worker-1**:	
-	`python3 -m worker 0 10.10.1.1 2888`	
+	`python3 -m worker.py 0 10.10.1.1 2888`	
