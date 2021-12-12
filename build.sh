@@ -1,4 +1,3 @@
-#!/bin/zsh
 work_path=$(dirname $(readlink -f $0))
 cd ${work_path}
 
@@ -15,7 +14,7 @@ yarn
 ret=$?
 if [ $ret -ne 0 ]; then
   echo -e "\e[31mFailed to update node_modules.\e[0m"
-  exit
+  exit $ret
 fi
 
 echo -e "\e[34mBuilding frontend files...\e[0m"
@@ -24,7 +23,7 @@ npm run build
 ret=$?
 if [ $ret -ne 0 ]; then
   echo -e "\e[31mBuilding frontend files failed.\e[0m"
-  exit
+  exit $ret
 fi
 
 mv dist $target_path
