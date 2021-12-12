@@ -32,6 +32,7 @@
 6. After the manager and the workers are running, open a browser and use the url given in the manager to upload images.    
 
 ## Note   
-1. Video url:    
-2. Recommand upload images of small size and don't upload too much images(e.g. no more than 3 images) because GENI nodes cannot handle too much work.    
-3. We provide a sample image(download.jpeg) for you to test.
+1. Video url: https://drive.google.com/file/d/1gxDpU1c7R3iOMCqg6Ax7R07Aj2Mx05kb/view?usp=sharing    
+2. You can use server url to log in our project directly because we use TMUX to keep running our project on GENI.    
+3. Recommand upload images of small size and don't upload too much images(e.g. no more than 3 images) because GENI nodes cannot handle too much work.    
+4. We provide a sample image(download.jpeg) for you to test.
