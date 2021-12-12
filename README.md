@@ -7,3 +7,8 @@
 		`wget https://raw.githubusercontent.com/yzhang37/655ImageMiniProject/main/worker/worker_prerequisite.sh`    
 		`chmod +x ./worker_prerequisite.sh`    
 		`./worker_prerequisite.sh`    
+3. Log in node **manager**:
+
+
+4. In **worker-1**:	
+	`python3 -m worker 0 10.10.1.1 2888`	
