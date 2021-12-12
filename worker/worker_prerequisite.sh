@@ -1,6 +1,6 @@
 #!/bin/bash
-wget https://github.com/yzhang37/655ImageMiniProject/blob/main/worker/imagenet_label.json
-wget https://github.com/yzhang37/655ImageMiniProject/blob/main/worker/worker.py
+wget https://raw.githubusercontent.com/yzhang37/655ImageMiniProject/main/worker/imagenet_label.json
+wget https://raw.githubusercontent.com/yzhang37/655ImageMiniProject/main/worker/worker.py
 sudo apt-get update
 sudo apt-get install python3-pip
 sudo apt-get install libjpeg-dev zlib1g-dev
