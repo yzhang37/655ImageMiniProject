@@ -84,9 +84,9 @@ The communication between the manager node and the worker nodes is established t
 6. With the manager and worker running, open a browser and use the URL given in the manager to upload the image.   
 
 ### Note   
-1. Video url: https://drive.google.com/file/d/1gxDpU1c7R3iOMCqg6Ax7R07Aj2Mx05kb/view?usp=sharing
+1. Operation Video: 
 
-   <iframe src="https://drive.google.com/file/d/1gxDpU1c7R3iOMCqg6Ax7R07Aj2Mx05kb/preview" width="640" height="480" allow="autoplay"></iframe>
+   [![video_preview](README.assets/video_preview.png)](https://drive.google.com/file/d/1gxDpU1c7R3iOMCqg6Ax7R07Aj2Mx05kb/preview)
 
 2. You can login to our project directly using the server URL (http://128.95.190.58), as we use TMUX to run our project on GENI continuously.
 
